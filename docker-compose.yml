@@ -19,14 +19,14 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aju -d taskdb"]
+      test: ["CMD-SHELL", "pg_isready -U aju"]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 5s
 
   producer:
-    build: ./producer
+    image: ajcodedocker/fantacode-producer:latest
     container_name: fantacode-producer
     restart: unless-stopped
     depends_on:
@@ -41,7 +41,7 @@ services:
       - "8080:8080"
 
   listenera:
-    build: ./server
+    image: ajcodedocker/fantacode-listenera:latest
     container_name: fantacode-listenera
     restart: unless-stopped
     depends_on:
@@ -61,7 +61,7 @@ services:
       - "3000:3000"
 
   listenerb:
-    build: ./server
+    image: ajcodedocker/fantacode-listenerb:latest
     container_name: fantacode-listenerb
     restart: unless-stopped
     depends_on:

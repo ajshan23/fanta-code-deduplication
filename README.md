@@ -81,7 +81,15 @@ async function deduplicationHandle(event) {
 ## Setup
 
 ```bash
-docker-compose up --build
+docker-compose down -v
+```
+
+```bash
+docker-compose pull
+```
+
+```bash
+docker-compose up
 ```
 
 This starts:
@@ -124,6 +132,13 @@ curl http://localhost:3000/api/events
 **PostgreSQL**: Can add read replicas for /api/events endpoint
 
 **Producer**: Can run multiple producers behind a load balancer
+
+**Message Queue Integration (for very high load) (future)**:  
+If event traffic increases significantly,we can  integrate a **message broker** like **Kafka** or **RabbitMQ** between the producer and listeners.  
+This allows:
+- Buffered message handling (preventing listener overload)
+- Reliable retry and ordering mechanisms  
+- High throughput and horizontal scalability  
 
 ## Files Structure
 
@@ -171,4 +186,4 @@ Each instance logs with its INSTANCE_ID for easy tracking.
 
 
 
-made readme using an ai called claud
+made readme using an ai called claude.ai
