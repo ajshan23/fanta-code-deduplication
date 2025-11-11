@@ -1,0 +1,84 @@
+services:
+  redis:
+    image: redis:alpine
+    container_name: fantacode-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:15
+    container_name: fantacode-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aju
+      POSTGRES_PASSWORD: aju123
+      POSTGRES_DB: taskdb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aju -d taskdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  producer:
+    build: ./producer
+    container_name: fantacode-producer
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - PORT=3005
+    ports:
+      - "3005:3005"
+      - "8080:8080"
+
+  listenera:
+    build: ./server
+    container_name: fantacode-listenera
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      producer:
+        condition: service_started
+    environment:
+      - INSTANCE_ID=listenera
+      - PORT=3000
+      - WS_URL=ws://producer:8080
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgres://aju:aju123@postgres:5432/taskdb
+    ports:
+      - "3000:3000"
+
+  listenerb:
+    build: ./server
+    container_name: fantacode-listenerb
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      producer:
+        condition: service_started
+    environment:
+      - INSTANCE_ID=listenerb
+      - PORT=3001
+      - WS_URL=ws://producer:8080
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgres://aju:aju123@postgres:5432/taskdb
+    ports:
+      - "3001:3000"
+
+volumes:
+  pgdata:
